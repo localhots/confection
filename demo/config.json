@@ -1,0 +1,14 @@
+{
+    "app_name": "",
+    "build_number": 0,
+    "enable_sign_in": false,
+    "database_driver": "",
+    "database_config": {
+        "hostname": "",
+        "port": 0,
+        "username": "",
+        "password": "",
+        "database": ""
+    },
+    "sensitive_data": ""
+}

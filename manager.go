@@ -33,8 +33,13 @@ func New(conf interface{}) *Manager {
 			path: configPath,
 		},
 	}
+	mgr.bootstrap()
 
 	return mgr
+}
+
+func (m *Manager) Config() interface{} {
+	return m.conf.config
 }
 
 func (m *Manager) StartServer() {
@@ -43,4 +48,28 @@ func (m *Manager) StartServer() {
 		port:    serverPort,
 	}
 	srv.start()
+}
+
+func (m *Manager) bootstrap() {
+	if m.file.isExist() {
+		b, err := m.file.read()
+		if err != nil {
+			panic(err)
+		}
+
+		err = m.conf.load(b)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		b, err := m.conf.dump()
+		if err != nil {
+			panic(err)
+		}
+
+		err = m.file.write(b)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

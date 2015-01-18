@@ -48,6 +48,7 @@ func (c *config) dump() ([]byte, error) {
 	if err = json.Indent(&out, b, "", "    "); err != nil {
 		return nil, err
 	}
+	out.WriteByte('\n')
 
 	return out.Bytes(), nil
 }
