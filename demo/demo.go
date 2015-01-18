@@ -13,6 +13,7 @@ type (
 		EnableSignIn   bool           `json:"enable_sign_in" title:"Enable Sign-In"`
 		DatabaseDriver string         `json:"database_driver" title:"Database Driver" options:"mysql,postgresql,mssql"`
 		DatabaseConfig DatabaseConfig `json:"database_config"`
+		SensitiveData  string         `json:"sensitive_data" attrs:"ignored"`
 	}
 	DatabaseConfig struct {
 		Hostname string `json:"hostname"`

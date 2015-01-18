@@ -30,6 +30,7 @@ const (
 	tOptions  = "options"
 	aRequired = "required"
 	aReadonly = "readonly"
+	aIgnored  = "ignored"
 	sep       = ","
 )
 
@@ -68,6 +69,7 @@ func (c *config) meta(prefix string) []*configField {
 		panic(fmt.Errorf("Config is expected to be a Struct, not %s", ckind.String()))
 	}
 
+loop_over_fields:
 	for i := 0; i < cval.NumField(); i++ {
 		var (
 			field = ctyp.Field(i)
@@ -104,6 +106,9 @@ func (c *config) meta(prefix string) []*configField {
 				}
 				if attr == aReadonly {
 					cf.IsReadonly = true
+				}
+				if attr == aIgnored {
+					continue loop_over_fields
 				}
 			}
 
