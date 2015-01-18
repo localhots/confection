@@ -13,24 +13,24 @@ type (
 		config interface{}
 	}
 	configField struct {
-		Path        string   `json:"path"`
-		IsRequired  bool     `json:"is_required"`
-		IsReadonly  bool     `json:"is_readonly"`
-		Title       string   `json:"title"`
-		Description string   `json:"description"`
-		Options     []string `json:"options"`
+		Path       string      `json:"path"`
+		Type       string      `json:"type"`
+		Value      interface{} `json:"value"`
+		IsRequired bool        `json:"is_required"`
+		IsReadonly bool        `json:"is_readonly"`
+		Title      string      `json:"title"`
+		Options    []string    `json:"options"`
 	}
 )
 
 const (
-	tJson        = "json"
-	tTitle       = "title"
-	tDescription = "description"
-	tAttrs       = "attrs"
-	tOptions     = "options"
-	aRequired    = "required"
-	aReadonly    = "readonly"
-	sep          = ","
+	tJson     = "json"
+	tTitle    = "title"
+	tAttrs    = "attrs"
+	tOptions  = "options"
+	aRequired = "required"
+	aReadonly = "readonly"
+	sep       = ","
 )
 
 func (c *config) dump() ([]byte, error) {
@@ -60,56 +60,58 @@ func (c *config) meta(prefix string) []*configField {
 	var (
 		fields = []*configField{}
 		cval   = reflect.ValueOf(c.config)
-		typ    = reflect.TypeOf(c.config)
-		kind   = cval.Kind()
+		ctyp   = reflect.TypeOf(c.config)
+		ckind  = cval.Kind()
 	)
 
-	if kind != reflect.Struct {
-		panic(fmt.Errorf("Config is expected to be a Struct, not %s", kind.String()))
+	if ckind != reflect.Struct {
+		panic(fmt.Errorf("Config is expected to be a Struct, not %s", ckind.String()))
 	}
 
 	for i := 0; i < cval.NumField(); i++ {
 		var (
-			field = typ.Field(i)
+			field = ctyp.Field(i)
 			val   = cval.Field(i)
+			kind  = val.Kind()
 
-			jsonKey     = field.Tag.Get(tJson)
-			path        = strings.Join([]string{prefix, jsonKey}, "/")
-			title       = field.Tag.Get(tTitle)
-			description = field.Tag.Get(tDescription)
-			attrs       = strings.Split(field.Tag.Get(tAttrs), sep)
-			options     = strings.Split(field.Tag.Get(tOptions), sep)
+			jsonKey = field.Tag.Get(tJson)
+			path    = strings.Join([]string{prefix, jsonKey}, "/")
+			title   = field.Tag.Get(tTitle)
+			attrs   = field.Tag.Get(tAttrs)
+			options = field.Tag.Get(tOptions)
 
 			cf = &configField{
-				Path:        path,
-				Title:       title,
-				Description: description,
+				Path:  path,
+				Type:  val.Kind().String(),
+				Title: title,
 			}
 		)
 
-		// Skip field if no tags are set
-		if title == "" && len(attrs) == 0 && len(options) == 0 {
-			continue
-		}
-
-		// Substitute field name for title if none set
-		if title == "" {
-			cf.Title = field.Name
-		}
-
-		for _, attr := range attrs {
-			if attr == aRequired {
-				cf.IsRequired = true
+		if title != "" || len(attrs) == 0 || len(options) == 0 {
+			// Substitute field name for title if none set
+			if kind != reflect.Struct {
+				cf.Value = val.Interface()
 			}
-			if attr == aReadonly {
-				cf.IsReadonly = true
+			if title == "" {
+				cf.Title = field.Name
 			}
-		}
+			if len(options) > 0 {
+				cf.Options = strings.Split(options, sep)
+			}
+			for _, attr := range strings.Split(attrs, sep) {
+				if attr == aRequired {
+					cf.IsRequired = true
+				}
+				if attr == aReadonly {
+					cf.IsReadonly = true
+				}
+			}
 
-		fields = append(fields, cf)
+			fields = append(fields, cf)
+		}
 
 		// Recursion here
-		if val.Kind() == reflect.Struct {
+		if kind == reflect.Struct {
 			subconf := &config{
 				config: val.Interface(),
 			}
