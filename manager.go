@@ -18,7 +18,7 @@ var (
 	serverPort int
 )
 
-func Setup() {
+func SetupFlags() {
 	flag.StringVar(&configPath, "config", "config.json", "Path to config file")
 	flag.IntVar(&serverPort, "config-port", 5050, "Config manager http port")
 }

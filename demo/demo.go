@@ -23,10 +23,12 @@ type (
 	}
 )
 
-func main() {
-	confection.Setup()
+func init() {
+	confection.SetupFlags()
 	flag.Parse()
+}
 
+func main() {
 	conf := Config{
 		DatabaseConfig: DatabaseConfig{},
 	}
