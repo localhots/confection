@@ -20,13 +20,13 @@ func (cf *configFile) write(b []byte) (err error) {
 	)
 
 	if cf.isExist() {
+		fd, err = os.Open(cf.path)
+	} else {
 		if err = cf.mkdirp(); err != nil {
 			return
 		}
 
 		fd, err = os.Create(cf.path)
-	} else {
-		fd, err = os.Open(cf.path)
 	}
 	if err != nil {
 		return
