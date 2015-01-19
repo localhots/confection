@@ -3,6 +3,7 @@ package confection
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -24,10 +25,30 @@ func (s *server) start() {
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	switch req.URL.Path {
+	case "/fields.json":
+		s.fieldsHandler(w, req)
+	case "/save":
+		s.saveHandler(w, req)
+	default:
+		http.NotFound(w, req)
+	}
+}
+
+func (s *server) fieldsHandler(w http.ResponseWriter, req *http.Request) {
 	jsn, err := json.Marshal(s.manager.conf.meta(""))
 	if err != nil {
 		panic(err)
 	}
 
+	w.Header().Add("Content-Type", "application/json; charset=utf8")
 	w.Write(jsn)
+}
+
+func (s *server) saveHandler(w http.ResponseWriter, req *http.Request) {
+	b, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		panic(err)
+	}
+	s.manager.importJson(b)
 }
