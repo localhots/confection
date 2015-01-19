@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 
 	"github.com/localhots/confection"
@@ -33,6 +34,12 @@ func main() {
 	conf := Config{
 		DatabaseConfig: DatabaseConfig{},
 	}
-	manager := confection.New(conf)
+	manager := confection.New(conf, func(b []byte) interface{} {
+		var newConf Config
+		if err := json.Unmarshal(b, &newConf); err != nil {
+			panic(err)
+		}
+		return newConf
+	})
 	manager.StartServer()
 }

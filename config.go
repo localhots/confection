@@ -53,11 +53,7 @@ func (c *config) dump() ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func (c *config) load(b []byte) (err error) {
-	return
-}
-
-// TODO: function draft, needs refactor
+// TODO: function is too heavy, needs refactor
 func (c *config) meta(prefix string) []*configField {
 	var (
 		fields = []*configField{}

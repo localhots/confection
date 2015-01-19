@@ -7,9 +7,10 @@ import (
 
 type (
 	Manager struct {
-		mux  *sync.Mutex
-		conf *config
-		file *configFile
+		mux          *sync.Mutex
+		conf         *config
+		file         *configFile
+		unmarshaller func([]byte) interface{}
 	}
 )
 
@@ -23,7 +24,7 @@ func SetupFlags() {
 	flag.IntVar(&serverPort, "config-port", 5050, "Config manager http port")
 }
 
-func New(conf interface{}) *Manager {
+func New(conf interface{}, unmarshaller func([]byte) interface{}) *Manager {
 	mgr := &Manager{
 		mux: &sync.Mutex{},
 		conf: &config{
@@ -32,6 +33,7 @@ func New(conf interface{}) *Manager {
 		file: &configFile{
 			path: configPath,
 		},
+		unmarshaller: unmarshaller,
 	}
 	mgr.bootstrap()
 
@@ -57,10 +59,7 @@ func (m *Manager) bootstrap() {
 			panic(err)
 		}
 
-		err = m.conf.load(b)
-		if err != nil {
-			panic(err)
-		}
+		m.importJson(b)
 	} else {
 		b, err := m.conf.dump()
 		if err != nil {
@@ -72,4 +71,8 @@ func (m *Manager) bootstrap() {
 			panic(err)
 		}
 	}
+}
+
+func (m *Manager) importJson(b []byte) {
+	m.conf.config = m.unmarshaller(b)
 }
