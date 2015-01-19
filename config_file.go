@@ -51,7 +51,7 @@ func (cf *configFile) read() ([]byte, error) {
 
 func (cf *configFile) isExist() bool {
 	_, err := os.Stat(cf.path)
-	return os.IsExist(err)
+	return (err == nil)
 }
 
 func (cf *configFile) mkdirp() error {
