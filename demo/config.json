@@ -1,14 +1,14 @@
 {
-    "app_name": "",
-    "build_number": 0,
-    "enable_sign_in": false,
-    "database_driver": "",
+    "app_name": "Awesome App",
+    "build_number": 4401,
+    "enable_sign_in": true,
+    "database_driver": "mysql",
     "database_config": {
-        "hostname": "",
-        "port": 0,
-        "username": "",
+        "hostname": "127.0.0.1",
+        "port": 3306,
+        "username": "root",
         "password": "",
-        "database": ""
+        "database": "awesomeness"
     },
-    "sensitive_data": ""
+    "sensitive_data": "nasty secret here"
 }
