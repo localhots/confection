@@ -6,16 +6,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/GeertJohan/go.rice"
 )
 
 type (
 	server struct {
-		manager *Manager
-		port    int
+		manager       *Manager
+		port          int
+		staticHandler http.Handler
 	}
 )
 
 func (s *server) start() {
+	s.staticHandler = http.FileServer(rice.MustFindBox("static").HTTPBox())
+
 	portStr := ":" + strconv.Itoa(s.port)
 
 	fmt.Println("Configuration server is available at http://127.0.0.1" + portStr)
@@ -25,7 +30,15 @@ func (s *server) start() {
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	// Rewrite like a boss
+	if req.URL.Path == "/" {
+		req.URL.Path = "/config.html"
+	}
+
+	// Route like a boss
 	switch req.URL.Path {
+	case "/config.html", "/app.js", "/bootstrap.min.css":
+		s.staticHandler.ServeHTTP(w, req)
 	case "/fields.json":
 		s.fieldsHandler(w, req)
 	case "/save":
