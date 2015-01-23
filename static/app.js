@@ -20,34 +20,14 @@ function drawForm(fields) {
     var container = document.getElementById('fields');
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i],
-            formGroup = document.createElement('div'),
-            label = document.createElement('label'),
+            formGroup = makeDivNode('form-group'),
+            label = makeLabelNode(field.path, field.title),
             input;
 
-        formGroup.setAttribute('class', 'form-group');
-        label.setAttribute('for', field.path);
-        label.appendChild(document.createTextNode(field.title));
         formGroup.appendChild(label);
 
         if (field.options !== null) {
-            input = document.createElement('select');
-
-            if (field.is_required === false) {
-                var option = document.createElement('option');
-
-                option.setAttribute('value', '');
-                option.appendChild(document.createTextNode('Not selected'));
-                input.appendChild(option);
-            }
-
-            for (var j = 0; j < field.options.length; j++) {
-                var value = field.options[j],
-                    option = document.createElement('option');
-
-                option.setAttribute('value', value);
-                option.appendChild(document.createTextNode(value));
-                input.appendChild(option);
-            }
+            input = makeSelectNode(field.options, !field.is_required)
         } else {
             input = document.createElement('input');
         }
@@ -70,6 +50,43 @@ function drawForm(fields) {
         formGroup.appendChild(input);
         container.appendChild(formGroup);
     }
+}
+
+function makeDivNode(classes) {
+    var div = document.createElement('div');
+    div.setAttribute('class', classes);
+    return div;
+}
+
+function makeLabelNode(forId, text) {
+    var label = document.createElement('label'),
+        contents = document.createTextNode(text);
+    label.setAttribute('for', forId);
+    label.appendChild(contents);
+    return label;
+}
+
+function makeSelectNode(options, hasEmptyOption) {
+    var select = document.createElement('select');
+
+    if (hasEmptyOption === true) {
+        var option = document.createElement('option');
+
+        option.setAttribute('value', '');
+        option.appendChild(document.createTextNode('Not selected'));
+        select.appendChild(option);
+    }
+
+    for (var i = 0; i < options.length; i++) {
+        var value = options[i],
+            option = document.createElement('option');
+
+        option.setAttribute('value', value);
+        option.appendChild(document.createTextNode(value));
+        select.appendChild(option);
+    }
+
+    return select;
 }
 
 loadFields(drawForm);
