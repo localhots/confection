@@ -86,7 +86,7 @@ loop_over_fields:
 			}
 		)
 
-		if title != "" || len(attrs) == 0 || len(options) == 0 {
+		if title != "" || len(attrs) > 0 || len(options) > 0 {
 			// Substitute field name for title if none set
 			if kind != reflect.Struct {
 				cf.Value = val.Interface()
