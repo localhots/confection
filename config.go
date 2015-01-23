@@ -86,17 +86,7 @@ loop_over_fields:
 			}
 		)
 
-		if title != "" || len(attrs) > 0 || len(options) > 0 {
-			// Substitute field name for title if none set
-			if kind != reflect.Struct {
-				cf.Value = val.Interface()
-			}
-			if title == "" {
-				cf.Title = field.Name
-			}
-			if len(options) > 0 {
-				cf.Options = strings.Split(options, sep)
-			}
+		if len(attrs) > 0 {
 			for _, attr := range strings.Split(attrs, sep) {
 				if attr == aRequired {
 					cf.IsRequired = true
@@ -109,8 +99,20 @@ loop_over_fields:
 				}
 			}
 
-			fields = append(fields, cf)
 		}
+
+		// Substitute field name for title if none set
+		if kind != reflect.Struct {
+			cf.Value = val.Interface()
+		}
+		if title == "" {
+			cf.Title = field.Name
+		}
+		if len(options) > 0 {
+			cf.Options = strings.Split(options, sep)
+		}
+
+		fields = append(fields, cf)
 
 		// Recursion here
 		if kind == reflect.Struct {
