@@ -16,6 +16,21 @@ function loadFields(callback) {
     xhr.send(null);
 }
 
+function saveFields(payload, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/save', true);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                callback(response);
+            }
+        }
+    };
+    xhr.send(JSON.stringify(payload));
+}
+
 function drawForm(fields) {
     var container = document.getElementById('fields'),
         fieldsets = {};
@@ -59,14 +74,25 @@ function makeFieldNode(field) {
     } else {
         input = document.createElement('input');
     }
+    input.setAttribute('id', field.path);
 
     if (field.type !== 'bool') {
-        input.setAttribute('value', field.value);
+        input.value = field.value;
         input.setAttribute('class', 'form-control');
+    } else {
+        if (field.value) {
+            input.setAttribute('checked', 'checked');
+        }
     }
-    input.setAttribute('id', field.path);
+
     if (field.is_readonly) {
         input.setAttribute('readonly', 'readonly');
+    }
+
+    input.setAttribute('data-type', field.type);
+    if (field.is_ignored) {
+        input.setAttribute('type', 'hidden');
+        return input;
     }
 
     switch (field.type) {
@@ -77,9 +103,6 @@ function makeFieldNode(field) {
         break;
     case 'bool':
         input.setAttribute('type', 'checkbox');
-        if (field.value) {
-            input.setAttribute('checked', 'checked');
-        }
         label.innerHTML = '';
         label.appendChild(input);
         label.appendChild(document.createTextNode(field.title));
@@ -201,3 +224,76 @@ function makeSelectNode(options, hasEmptyOption) {
 }
 
 loadFields(drawForm);
+
+document.getElementById('config').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    var elems = {},
+        inputs = document.getElementsByTagName('input'),
+        selects = document.getElementsByTagName('select');
+
+    for (var i = 0; i < selects.length; i++) {
+        var select = selects[i],
+            path = select.getAttribute('id'),
+            value = select.value;
+        elems[path] = value;
+    }
+
+    for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i],
+            type = input.getAttribute('data-type'),
+            path = input.getAttribute('id'),
+            value = input.value;
+
+        switch (type) {
+        case 'string':
+            elems[path] = value;
+            break;
+        case 'bool':
+            elems[path] = input.checked;
+            break;
+        case 'int':
+        case 'int8':
+        case 'int16':
+        case 'int32':
+        case 'int64':
+        case 'uint':
+        case 'uint8':
+        case 'uint16':
+        case 'uint32':
+        case 'uint64':
+            elems[path] = parseInt(value, 10);
+            break;
+        case 'float32':
+        case 'float64':
+            elems[path] = parseFloat(value);
+            break;
+        }
+    }
+
+    var payload = {};
+    for (path in elems) {
+        var value = elems[path],
+            tokens = path.slice(1).split('/'),
+            parents = tokens.slice(0, -1),
+            key = tokens.slice(-1)[0],
+            parent = payload;
+
+        for (var i = 0; i < parents.length; i++) {
+            var pkey = parents[i];
+
+            if (!parent[pkey]) {
+                parent[pkey] = {}
+            }
+            parent = parent[pkey];
+        }
+
+        parent[key] = value;
+    }
+
+    saveFields(payload, function(resp){
+        console.log(resp);
+    });
+
+    return false;
+});

@@ -61,18 +61,23 @@ func (m *Manager) bootstrap() {
 
 		m.importJson(b)
 	} else {
-		b, err := m.conf.dump()
-		if err != nil {
-			panic(err)
-		}
-
-		err = m.file.write(b)
-		if err != nil {
-			panic(err)
-		}
+		m.dumpConfig()
 	}
 }
 
 func (m *Manager) importJson(b []byte) {
 	m.conf.config = m.unmarshaller(b)
+	m.dumpConfig()
+}
+
+func (m *Manager) dumpConfig() {
+	b, err := m.conf.dump()
+	if err != nil {
+		panic(err)
+	}
+
+	err = m.file.write(b)
+	if err != nil {
+		panic(err)
+	}
 }
