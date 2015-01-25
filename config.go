@@ -18,6 +18,7 @@ type (
 		Value      interface{} `json:"value"`
 		IsRequired bool        `json:"is_required"`
 		IsReadonly bool        `json:"is_readonly"`
+		IsIgnored  bool        `json:"is_ignored"`
 		Title      string      `json:"title"`
 		Options    []string    `json:"options"`
 	}
@@ -66,7 +67,6 @@ func (c *config) meta(prefix string) []*configField {
 		panic(fmt.Errorf("Config is expected to be a Struct, not %s", ckind.String()))
 	}
 
-loop_over_fields:
 	for i := 0; i < cval.NumField(); i++ {
 		var (
 			field = ctyp.Field(i)
@@ -95,7 +95,7 @@ loop_over_fields:
 					cf.IsReadonly = true
 				}
 				if attr == aIgnored {
-					continue loop_over_fields
+					cf.IsIgnored = true
 				}
 			}
 
