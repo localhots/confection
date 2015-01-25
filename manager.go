@@ -52,6 +52,9 @@ func (m *Manager) StartServer() {
 	srv.start()
 }
 
+func (m *Manager) RequireConfig() {
+}
+
 func (m *Manager) bootstrap() {
 	if m.file.isExist() {
 		b, err := m.file.read()
