@@ -25,7 +25,7 @@ function drawForm(fields) {
 
         if (field.value !== null) {
             var fieldNode = makeFieldNode(field),
-                fieldSetName = field.path.match("(.*\/).*")[1];
+                fieldSetName = field.path.match('(.*\/).*')[1];
 
             if (!fieldsets[fieldSetName]) {
                 fieldsets[fieldSetName] = [];
@@ -54,30 +54,97 @@ function makeFieldNode(field) {
         label = makeLabelNode(field.path, field.title),
         input;
 
-    formGroup.appendChild(label);
-
     if (field.options !== null) {
         input = makeSelectNode(field.options, !field.is_required)
     } else {
         input = document.createElement('input');
     }
 
-    input.setAttribute('value', field.value);
+    if (field.type !== 'bool') {
+        input.setAttribute('value', field.value);
+        input.setAttribute('class', 'form-control');
+    }
     input.setAttribute('id', field.path);
-    input.setAttribute('class', 'form-control');
     if (field.is_readonly) {
         input.setAttribute('readonly', 'readonly');
     }
 
     switch (field.type) {
-    case "string":
+    case 'string':
         input.setAttribute('type', 'text');
+        formGroup.appendChild(label);
+        formGroup.appendChild(input);
+        break;
+    case 'bool':
+        input.setAttribute('type', 'checkbox');
+        if (field.value) {
+            input.setAttribute('checked', 'checked');
+        }
+        label.innerHTML = '';
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(field.title));
+        formGroup.setAttribute('class', 'checkbox');
+        formGroup.appendChild(label);
+        break;
+    case 'int':
+    case 'int8':
+    case 'int16':
+    case 'int32':
+    case 'int64':
+    case 'uint':
+    case 'uint8':
+    case 'uint16':
+    case 'uint32':
+    case 'uint64':
+    case 'float32':
+    case 'float64':
+        input.setAttribute('type', 'number');
+        switch (field.type) {
+        case 'int8':
+            input.setAttribute('min', '-128');
+            input.setAttribute('max', '127');
+            break;
+        case 'int16':
+            input.setAttribute('min', '-32768');
+            input.setAttribute('max', '32767');
+            break;
+        case 'int32':
+            input.setAttribute('min', '-2147483648');
+            input.setAttribute('max', '2147483647');
+            break;
+        case 'int': // Assuming x86-64 architecture
+        case 'int64':
+            input.setAttribute('min', '-9223372036854775808');
+            input.setAttribute('max', '9223372036854775807');
+            break;
+        case 'uint8':
+            input.setAttribute('min', '0');
+            input.setAttribute('max', '255');
+            break;
+        case 'uint16':
+            input.setAttribute('min', '0');
+            input.setAttribute('max', '65535');
+            break;
+        case 'uint32':
+            input.setAttribute('min', '0');
+            input.setAttribute('max', '4294967295');
+            break;
+        case 'uint': // Assuming x86-64 architecture
+        case 'uint64':
+            input.setAttribute('min', '0');
+            input.setAttribute('max', '18446744073709551615');
+            break;
+        case 'float32':
+        case 'float64':
+            input.setAttribute('step', 'any');
+            break;
+        }
+        formGroup.appendChild(label);
+        formGroup.appendChild(input);
         break;
     default:
-        console.log("Invalid field type: "+ field.type, field)
+        console.log('Invalid field type: '+ field.type, field)
     }
-
-    formGroup.appendChild(input);
 
     return formGroup;
 }
@@ -134,10 +201,3 @@ function makeSelectNode(options, hasEmptyOption) {
 }
 
 loadFields(drawForm);
-
-// TODO: Support for various types
-// bool
-// string
-// int int8 int16 int32 int64
-// uint uint8 uint16 uint32 uint64
-// float32 float64
