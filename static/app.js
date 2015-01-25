@@ -17,39 +17,83 @@ function loadFields(callback) {
 }
 
 function drawForm(fields) {
-    var container = document.getElementById('fields');
+    var container = document.getElementById('fields'),
+        fieldsets = {};
+
+    for (var i = 0; i < fields.length; i++) {
+        var field = fields[i];
+
+        if (field.value !== null) {
+            var fieldNode = makeFieldNode(field),
+                fieldSetName = field.path.match("(.*\/).*")[1];
+
+            if (!fieldsets[fieldSetName]) {
+                fieldsets[fieldSetName] = [];
+            }
+            fieldsets[fieldSetName].push(fieldNode);
+        }
+    }
+
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i],
-            formGroup = makeDivNode('form-group'),
-            label = makeLabelNode(field.path, field.title),
-            input;
+            node;
 
-        formGroup.appendChild(label);
-
-        if (field.options !== null) {
-            input = makeSelectNode(field.options, !field.is_required)
-        } else {
-            input = document.createElement('input');
+        if (field.value === null) {
+            node = makeFieldSetNode(field.title, fieldsets[field.path + '/']);
+        } else if (!field.path.match(/^\/[^\/]+\//)) {
+            node = makeFieldNode(field);
         }
 
-        input.setAttribute('value', field.value);
-        input.setAttribute('id', field.path);
-        input.setAttribute('class', 'form-control');
-        if (field.is_readonly) {
-            input.setAttribute('readonly', 'readonly');
-        }
-
-        switch (field.type) {
-        case "string":
-            input.setAttribute('type', 'text');
-            break;
-        default:
-            console.log("Invalid field type: "+ field.type, field)
-        }
-
-        formGroup.appendChild(input);
-        container.appendChild(formGroup);
+        container.appendChild(node);
     }
+
+}
+
+function makeFieldNode(field) {
+    var formGroup = makeDivNode('form-group'),
+        label = makeLabelNode(field.path, field.title),
+        input;
+
+    formGroup.appendChild(label);
+
+    if (field.options !== null) {
+        input = makeSelectNode(field.options, !field.is_required)
+    } else {
+        input = document.createElement('input');
+    }
+
+    input.setAttribute('value', field.value);
+    input.setAttribute('id', field.path);
+    input.setAttribute('class', 'form-control');
+    if (field.is_readonly) {
+        input.setAttribute('readonly', 'readonly');
+    }
+
+    switch (field.type) {
+    case "string":
+        input.setAttribute('type', 'text');
+        break;
+    default:
+        console.log("Invalid field type: "+ field.type, field)
+    }
+
+    formGroup.appendChild(input);
+
+    return formGroup;
+}
+
+function makeFieldSetNode(title, fields) {
+    var fieldsetNode = document.createElement('fieldset'),
+        legendNode = document.createElement('legend');
+
+    legendNode.appendChild(document.createTextNode(title));
+    fieldsetNode.appendChild(legendNode);
+
+    for (var i = 0; i < fields.length; i++) {
+        fieldsetNode.appendChild(fields[i]);
+    }
+
+    return fieldsetNode;
 }
 
 function makeDivNode(classes) {
