@@ -54,7 +54,7 @@ func (s *server) fieldsHandler(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
-	w.Header().Add("Content-Type", "application/json; charset=utf8")
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.Write(jsn)
 }
 
@@ -64,4 +64,8 @@ func (s *server) saveHandler(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	s.manager.importJson(b)
+
+	jsn, _ := json.Marshal(map[string]bool{"success": true})
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Write(jsn)
 }
