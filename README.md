@@ -2,6 +2,10 @@
 
 Confection is a configuration manager plugin for Go projects.
 
+## This project is outdated
+
+Please use [Secondly](https://github.com/localhots/secondly) instead.
+
 ## Configuration
 
 First you need to add tags to fields of the config struct.
